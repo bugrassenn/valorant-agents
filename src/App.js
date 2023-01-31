@@ -1,24 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import Header from "./components/Header";
+// COMPONENTS
+import Agents from "./components/Agents";
+import Details from "./components/Details";
 
 function App() {
+  const [agents, setAgents] = useState([]);
+  useEffect(() => {
+    getAgents();
+  }, []);
+
+  const getAgents = () => {
+    let baseURL = "https://valorant-api.com/v1/agents?isPlayableCharacter=true";
+    axios.get(baseURL).then((response) => {
+      setAgents(response.data.data);
+    });
+  };
+
+  const agentsFilter = (displayName) => {
+    var filteredAgents = [];
+    if (displayName === "") {
+      getAgents();
+    }
+    for (var i in agents) {
+      if (agents[i].displayName.toLowerCase().includes(displayName)) {
+        filteredAgents.push(agents[i]);
+      }
+    }
+
+    setAgents(filteredAgents);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Header agentsFilter={agentsFilter} />
+      <Routes>
+        <Route path="/" element={<Agents agents={agents} />} />
+        <Route path="/detail/:id" element={<Details agents={agents} />} />
+      </Routes>
+    </>
   );
 }
 
